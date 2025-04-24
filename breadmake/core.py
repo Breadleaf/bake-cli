@@ -3,6 +3,7 @@ from inspect import signature
 from sys import argv
 from subprocess import run, CalledProcessError
 
+
 class BreadMake:
     class Target:
         def __init__(self, func: Callable[[], bool]):
@@ -47,9 +48,9 @@ class BreadMake:
         assert f_return is bool, "targets must return bool"
 
         # ensure target name is not builtin function
-        assert \
-            f.__name__ not in BreadMake.builtin_functions, \
-            f"target name: {f.__name__} is taken by a built in function"
+        assert (
+            f.__name__ not in BreadMake.builtin_functions
+        ), f"target name: {f.__name__} is taken by a built in function"
 
         # set target and set default if not set
         self.targets.setdefault(f.__name__, BreadMake.Target(f))
@@ -57,8 +58,7 @@ class BreadMake:
             self.__default = f.__name__
 
     def default(self, name):
-        assert \
-            name in self.targets.keys(), "default target must be a valid target"
+        assert name in self.targets.keys(), "default target must be a valid target"
         self.__default = name
 
     def run(self, name):
@@ -68,7 +68,30 @@ class BreadMake:
             print(f"target: {target.func.__name__} failed")
             exit(1)
 
+    def shell_pass(self, command: str) -> str:
+        command += "|| true"
+        try:
+            process = run(
+                command, shell=True, capture_output=True, text=True, check=False
+            )
+
+            process.check_returncode()
+            return str(process.stdout).strip()
+        except CalledProcessError as ex:
+            return str(ex.stderr).strip()
+
     def shell(self, command: str) -> str:
+        try:
+            process = run(
+                command, shell=True, capture_output=True, text=True, check=False
+            )
+
+            process.check_returncode()
+            return str(process.stdout).strip()
+        except CalledProcessError as ex:
+            return str(ex.stderr).strip()
+
+    def shell_strict(self, command: str) -> str:
         try:
             process = run(
                 command, shell=True, capture_output=True, text=True, check=False
@@ -83,9 +106,9 @@ class BreadMake:
 
     def compile(self):
         match len(argv) - 1:
-            case 0: # run the default target
+            case 0:  # run the default target
                 self.run(self.__default)
-            case 1: # run the user defined target
+            case 1:  # run the user defined target
                 self.run(argv[1])
             case _:
                 print(f"usage: {argv[0]} [target]")
