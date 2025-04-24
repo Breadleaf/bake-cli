@@ -5,7 +5,3 @@
 created to simplify `Makefile` systems with a lot of `bash` conditional
 statements. Most of the complex functions of a `Makefile` are deferred to the
 shell, therefore it should be capable of the same things `make` can do.
-
-## current objective
-
-self host the build tool (`pyproject.toml` and `venv` are used too)
