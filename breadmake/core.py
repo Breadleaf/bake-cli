@@ -26,7 +26,10 @@ class BreadMake:
 
             longest_name = len(max(self.targets.keys(), key=len))
             for name, target in self.targets.items():
-                print(name.ljust(longest_name), "-", target.docs)
+                default = "(default)"
+                if name != self.__default:
+                    default = " " * len(default)
+                print(default, name.ljust(longest_name), "-", target.docs)
 
             return True
 

@@ -2,21 +2,64 @@ import breadmake
 
 bm = breadmake.BreadMake()
 
-CC = bm.shell("which gcc")
+def get_version():
+    """get the current version of the pyproject.toml"""
+    DEFAULT_VERSION = "0.0.0"
+    try:
+        with open("pyproject.toml", "r") as pyproject:
+            for line in pyproject:
+                if line.startswith("version = "):
+                    return line.split("=")[1].strip().split("\"")
+    except FileNotFoundError:
+        return DEFAULT_VERSION
+    return DEFAULT_VERSION
+
+VERSION = get_version()
+DIST_DIR = "dist"
 
 @bm.target
-def my_help() -> bool:
-    bm.run("build")
-    print("usage: do thing [1] .. [N]")
+def clean() -> bool:
+    """remove all build artifacts"""
     return True
 
 @bm.target
 def build() -> bool:
-    """
-    build the exec using clang/gcc
-    """
-    print("build thing")
-    print(f"{CC}")
+    """build breadmake distribution packages"""
+    return True
+
+@bm.target
+def test() -> bool:
+    """ensure type checks pass with mypy"""
+    return True
+
+@bm.target
+def package() -> bool:
+    """build and package"""
+    return True
+
+@bm.target
+def install() -> bool:
+    """install package in editable mode"""
+    return True
+
+@bm.target
+def uninstall() -> bool:
+    """uninstall package"""
+    return True
+
+@bm.target
+def publish() -> bool:
+    """publish package to PyPI"""
+    return True
+
+@bm.target
+def version() -> bool:
+    """print current version"""
+    return True
+
+@bm.target
+def init_env() -> bool:
+    """setup the python venv environment"""
     return True
 
 if __name__ == "__main__":
