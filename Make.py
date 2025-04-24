@@ -23,7 +23,7 @@ DIST_DIR = "dist"
 @bm.target
 def clean() -> bool:
     """remove all build artifacts"""
-    bm.shell_pass(f"rm -rf {DIST_DIR} .mypy_cache")
+    bm.shell_pass(f"rm -rf {DIST_DIR} .mypy_cache *.egg-info")
     bm.shell_pass("rm -i *.pyc")
 
     remove_pycache = [
@@ -35,6 +35,13 @@ def clean() -> bool:
     ]
     bm.shell_pass(" ".join(remove_pycache))
 
+    return True
+
+
+@bm.target
+def format() -> bool:
+    """format all files in the project"""
+    bm.shell_pass("black . -v")
     return True
 
 
@@ -103,9 +110,7 @@ def minimum_python_version() -> bool:
         "-v",
     ]
 
-    output = bm.shell(" ".join(find_command) + " | xargs " + " ".join(vermin_command))
-    print(output)
-
+    bm.shell(" ".join(find_command) + " | xargs " + " ".join(vermin_command))
     return True
 
 

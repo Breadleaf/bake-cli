@@ -1,7 +1,10 @@
 from typing import Callable, Dict
 from inspect import signature
-from sys import argv
-from subprocess import run, CalledProcessError
+from sys import argv, stderr, stdout
+from subprocess import CalledProcessError, Popen
+from select import select
+from pty import openpty
+from os import close, read
 
 
 class BreadMake:
@@ -68,41 +71,53 @@ class BreadMake:
             print(f"target: {target.func.__name__} failed")
             exit(1)
 
-    def shell_pass(self, command: str) -> str:
-        command += "|| true"
-        try:
-            process = run(
-                command, shell=True, capture_output=True, text=True, check=False
-            )
+    def _run_and_print(self, command: str, check: bool) -> str:
+        print(f"$ {command}", file=stderr)
 
-            process.check_returncode()
-            return str(process.stdout).strip()
-        except CalledProcessError as ex:
-            return str(ex.stderr).strip()
+        parent_fd, child_fd = openpty()
+        p = Popen(
+            command,
+            shell=True,
+            stdin=child_fd,
+            stdout=child_fd,
+            stderr=child_fd,
+            close_fds=True,
+        )
+        close(child_fd)
+
+        buffer = bytearray()
+        try:
+            while True:
+                r, _, _ = select([parent_fd], [], [])
+                if parent_fd in r:
+                    data = read(parent_fd, 1024)
+                    if not data:
+                        break
+                    buffer.extend(data)
+                    stdout.buffer.write(data)
+                    stdout.buffer.flush()
+        finally:
+            close(parent_fd)
+
+        ret = p.wait()
+        if check and ret != 0:
+            raise CalledProcessError(ret, command)
+        return buffer.decode("utf-8", errors="replace").rstrip()
+
+    def shell_pass(self, command: str) -> str:
+        try:
+            return self._run_and_print(command, check=False)
+        except CalledProcessError:
+            return ""
 
     def shell(self, command: str) -> str:
-        try:
-            process = run(
-                command, shell=True, capture_output=True, text=True, check=False
-            )
-
-            process.check_returncode()
-            return str(process.stdout).strip()
-        except CalledProcessError as ex:
-            return str(ex.stderr).strip()
+        return self._run_and_print(command, check=False)
 
     def shell_strict(self, command: str) -> str:
         try:
-            process = run(
-                command, shell=True, capture_output=True, text=True, check=False
-            )
-
-            process.check_returncode()
-            return str(process.stdout).strip()
+            return self._run_and_print(command, check=True)
         except CalledProcessError as ex:
-            print(str(ex.stderr).strip())
-            print(ex)
-            exit(1)
+            exit(ex.returncode)
 
     def compile(self):
         match len(argv) - 1:
