@@ -3,3 +3,4 @@ build>=1.2.2
 black>=25.1.0
 mypy>=1.15.0
 vermin>=1.6.0
+twine>=6.1.0
