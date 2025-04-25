@@ -1,6 +1,6 @@
-import breadmake
+import bake
 
-bm = breadmake.BreadMake()
+b = bake.Bakery()
 
 
 def get_version():
@@ -10,7 +10,7 @@ def get_version():
         with open("pyproject.toml", "r") as pyproject:
             for line in pyproject:
                 if line.startswith("version = "):
-                    return line.split("=")[1].strip().split('"')
+                    return line.split(" = ")[1].strip().strip('"')
     except FileNotFoundError:
         return DEFAULT_VERSION
     return DEFAULT_VERSION
@@ -20,11 +20,11 @@ VERSION = get_version()
 DIST_DIR = "dist"
 
 
-@bm.target
+@b.target
 def clean() -> bool:
     """remove all build artifacts"""
-    bm.shell_pass(f"rm -rf {DIST_DIR} .mypy_cache *.egg-info")
-    bm.shell_pass("rm -i *.pyc")
+    b.shell_pass(f"rm -rf {DIST_DIR} .mypy_cache *.egg-info")
+    b.shell_pass("rm -i *.pyc")
 
     remove_pycache = [
         "find .",
@@ -33,67 +33,75 @@ def clean() -> bool:
         '-a -not -path "./venv*"',
         "| xargs rm -rf",
     ]
-    bm.shell_pass(" ".join(remove_pycache))
+    b.shell_pass(" ".join(remove_pycache))
 
     return True
 
 
-@bm.target
+@b.target
 def format() -> bool:
     """format all files in the project"""
-    bm.shell_pass("black . -v")
+    b.shell_pass("black . -v")
     return True
 
 
-@bm.target
+@b.target
 def build() -> bool:
-    """build breadmake distribution packages"""
+    """build bake distribution packages"""
+    b.shell_strict("./venv/bin/python -m build")
     return True
 
 
-@bm.target
-def test() -> bool:
+@b.target
+def type_check() -> bool:
     """ensure type checks pass with mypy"""
+    b.shell_strict("./venv/bin/mypy .")
     return True
 
 
-@bm.target
-def package() -> bool:
-    """build and package"""
-    return True
-
-
-@bm.target
+@b.target
 def install() -> bool:
     """install package in editable mode"""
+    b.run("clean")
+    b.run("build")
+    b.run("uninstall")
+    b.shell_strict("./venv/bin/pip install -e .")
     return True
 
 
-@bm.target
+@b.target
 def uninstall() -> bool:
     """uninstall package"""
+    b.shell_strict("./venv/bin/pip uninstall -y breadmake")
     return True
 
 
-@bm.target
+@b.target
 def publish() -> bool:
     """publish package to PyPI"""
+    b.shell_strict("./venv/bin/python -m twine upload dist/*")
     return True
 
 
-@bm.target
+@b.target
 def version() -> bool:
     """print current version"""
+    print(f"Version: {VERSION}")
     return True
 
 
-@bm.target
+@b.target
 def init_env() -> bool:
     """setup the python venv environment"""
+    python = b.shell_strict("which python3")
+    b.shell_strict(f"{python} -m venv venv")
+    b.shell_strict("./venv/bin/pip install --upgrade pip")
+    b.shell_strict("./venv/bin/pip install -r ./requirements.txt")
+    print("To finish setup run: `source ./venv/bin/activate`")
     return True
 
 
-@bm.target
+@b.target
 def minimum_python_version() -> bool:
     """use vermin to find the minimum python version"""
     find_command = [
@@ -105,14 +113,14 @@ def minimum_python_version() -> bool:
     ]
 
     vermin_command = [
-        bm.shell_strict("which vermin"),
+        b.shell_strict("which vermin"),
         "--no-tips",
         "-v",
     ]
 
-    bm.shell(" ".join(find_command) + " | xargs " + " ".join(vermin_command))
+    b.shell(" ".join(find_command) + " | xargs " + " ".join(vermin_command))
     return True
 
 
 if __name__ == "__main__":
-    bm.compile()
+    b.compile()

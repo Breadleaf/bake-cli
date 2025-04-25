@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="breadmake",
+    name="bake",
     version="0.1.0",
     author="Bradley Hutchings",
     author_email="bkhnapa@gmail.com",
@@ -16,7 +16,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "breadmake=breadmake.breadmake_cli:main",
+            "bake=bake.bake_cli:main",
         ],
     },
 )
