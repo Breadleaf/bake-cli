@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="bake",
+    name="bakery-build",
     version="0.1.0",
     author="Bradley Hutchings",
     author_email="bkhnapa@gmail.com",

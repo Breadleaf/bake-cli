@@ -79,6 +79,8 @@ def uninstall() -> bool:
 @b.target
 def publish() -> bool:
     """publish package to PyPI"""
+    b.run("clean")
+    b.run("build")
     b.shell_strict("./venv/bin/python -m twine upload dist/*")
     return True
 
