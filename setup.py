@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="bakery-build",
-    version="1.0.1",
+    version="1.0.3",
     author="Bradley Hutchings",
     author_email="bkhnapa@gmail.com",
     description="a simple build automation library and CLI tool",

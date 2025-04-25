@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bakery-build"
-version = "1.0.1"
+version = "1.0.3"
 description = "a simple build automation library and CLI tool"
 authors = [
 { name="Bradley Hutchings", email="bkhnapa@gmail.com" }
