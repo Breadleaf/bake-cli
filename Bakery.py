@@ -124,5 +124,10 @@ def minimum_python_version() -> bool:
     return True
 
 
+@b.target
+def local_install() -> bool:
+    return True
+
+
 if __name__ == "__main__":
     b.compile()

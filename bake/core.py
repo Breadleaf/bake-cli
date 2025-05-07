@@ -91,7 +91,11 @@ class Bakery:
             while True:
                 r, _, _ = select([parent_fd], [], [])
                 if parent_fd in r:
-                    data = read(parent_fd, 1024)
+                    try:
+                        data = read(parent_fd, 1024)
+                    except OSError:
+                        # EIO on a pty master means EOF on the slave side
+                        break
                     if not data:
                         break
                     buffer.extend(data)
