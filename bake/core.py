@@ -72,8 +72,9 @@ class Bakery:
             print(f"target: {target.func.__name__} failed")
             exit(1)
 
-    def _run_and_print(self, command: str, check: bool) -> str:
-        print(f"$ {command}", file=stderr)
+    def _run_and_print(self, command: str, check: bool, quiet: bool = False) -> str:
+        if not quiet:
+            print(f"$ {command}", file=stderr)
 
         parent_fd, child_fd = openpty()
         p = Popen(
@@ -99,8 +100,9 @@ class Bakery:
                     if not data:
                         break
                     buffer.extend(data)
-                    stdout.buffer.write(data)
-                    stdout.buffer.flush()
+                    if not quiet:
+                        stdout.buffer.write(data)
+                        stdout.buffer.flush()
         finally:
             close(parent_fd)
 
@@ -109,18 +111,18 @@ class Bakery:
             raise CalledProcessError(ret, command)
         return buffer.decode("utf-8", errors="replace").rstrip()
 
-    def shell_pass(self, command: str) -> str:
+    def shell_pass(self, command: str, quiet: bool = False) -> str:
         try:
-            return self._run_and_print(command, check=False)
+            return self._run_and_print(command, check=False, quiet=quiet)
         except CalledProcessError:
             return ""
 
-    def shell(self, command: str) -> str:
-        return self._run_and_print(command, check=False)
+    def shell(self, command: str, quiet: bool = False) -> str:
+        return self._run_and_print(command, check=False, quiet=quiet)
 
-    def shell_strict(self, command: str) -> str:
+    def shell_strict(self, command: str, quiet: bool = False) -> str:
         try:
-            return self._run_and_print(command, check=True)
+            return self._run_and_print(command, check=True, quiet=quiet)
         except CalledProcessError as ex:
             exit(ex.returncode)
 

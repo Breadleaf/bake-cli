@@ -72,7 +72,7 @@ def install() -> bool:
 @b.target
 def uninstall() -> bool:
     """uninstall package"""
-    b.shell_strict("./venv/bin/pip uninstall -y breadmake")
+    b.shell_strict("./venv/bin/pip uninstall -y bakery-build")
     return True
 
 
